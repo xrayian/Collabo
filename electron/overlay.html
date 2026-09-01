@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Collabo Desktop Overlay</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      user-select: none;
+    }
+    html, body {
+      width: 100vw;
+      height: 100vh;
+      overflow: hidden;
+      background: transparent !important;
+      pointer-events: none;
+    }
+    canvas {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      display: block;
+      pointer-events: none;
+    }
+  </style>
+</head>
+<body>
+  <canvas id="overlay-canvas"></canvas>
+
+  <script>
+    const canvas = document.getElementById('overlay-canvas');
+    const ctx = canvas.getContext('2d');
+
+    let strokes = [];
+    const STROKE_LIFETIME_MS = 5000;
+    const STROKE_FADE_DURATION_MS = 500;
+    const STROKE_TOTAL_TTL_MS = STROKE_LIFETIME_MS + STROKE_FADE_DURATION_MS;
+
+    function resizeCanvas() {
+      const dpr = window.devicePixelRatio || 1;
+      const width = Math.floor(window.innerWidth * dpr);
+      const height = Math.floor(window.innerHeight * dpr);
+      if (width > 0 && height > 0) {
+        canvas.width = width;
+        canvas.height = height;
+      }
+    }
+
+    window.addEventListener('resize', resizeCanvas);
+    resizeCanvas();
+
+    function denormalizePoint(point, width, height) {
+      return [point[0] * width, point[1] * height];
+    }
+
+    function drawStroke(ctx, stroke, width, height, now) {
+      const points = stroke.points;
+      if (!points || points.length === 0) return;
+
+      let alpha = 1.0;
+      let blurPx = 0;
+
+      if (stroke.timestamp) {
+        const age = now - stroke.timestamp;
+        if (age >= STROKE_TOTAL_TTL_MS) return;
+        if (age > STROKE_LIFETIME_MS) {
+          const progress = Math.min(1, (age - STROKE_LIFETIME_MS) / STROKE_FADE_DURATION_MS);
+          alpha = Math.max(0, 1.0 - progress);
+          blurPx = progress * 6;
+        }
+      }
+
+      ctx.save();
+      ctx.globalAlpha = alpha;
+      if (blurPx > 0 && typeof ctx.filter === 'string') {
+        ctx.filter = `blur(${blurPx.toFixed(1)}px)`;
+      }
+      ctx.strokeStyle = stroke.color;
+      const baseWidth = Math.max(3, (width / 400));
+      ctx.lineWidth = baseWidth;
+      ctx.lineCap = 'round';
+      ctx.lineJoin = 'round';
+
+      if (points.length === 1) {
+        const [x, y] = denormalizePoint(points[0], width, height);
+        ctx.fillStyle = stroke.color;
+        ctx.beginPath();
+        ctx.arc(x, y, baseWidth / 2, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.restore();
+        return;
+      }
+
+      ctx.beginPath();
+      const [firstX, firstY] = denormalizePoint(points[0], width, height);
+      ctx.moveTo(firstX, firstY);
+
+      if (points.length === 2) {
+        const [secondX, secondY] = denormalizePoint(points[1], width, height);
+        ctx.lineTo(secondX, secondY);
+      } else {
+        for (let i = 1; i < points.length - 1; i++) {
+          const [currX, currY] = denormalizePoint(points[i], width, height);
+          const [nextX, nextY] = denormalizePoint(points[i + 1], width, height);
+          const midX = (currX + nextX) / 2;
+          const midY = (currY + nextY) / 2;
+          ctx.quadraticCurveTo(currX, currY, midX, midY);
+        }
+        const [lastX, lastY] = denormalizePoint(points[points.length - 1], width, height);
+        ctx.lineTo(lastX, lastY);
+      }
+
+      ctx.stroke();
+      ctx.restore();
+    }
+
+    // Render loop running at 60 FPS
+    function renderLoop() {
+      const width = canvas.width;
+      const height = canvas.height;
+      ctx.clearRect(0, 0, width, height);
+
+      const now = Date.now();
+      // Filter out expired strokes
+      strokes = strokes.filter(s => now - (s.timestamp || now) < STROKE_TOTAL_TTL_MS);
+
+      for (const stroke of strokes) {
+        drawStroke(ctx, stroke, width, height, now);
+      }
+
+      requestAnimationFrame(renderLoop);
+    }
+    requestAnimationFrame(renderLoop);
+
+    // Register IPC listeners exposed by preload-overlay
+    if (window.overlayAPI) {
+      window.overlayAPI.onDrawStroke((msg) => {
+        if (!msg || !msg.strokeId) return;
+
+        const existing = strokes.find(s => s.id === msg.strokeId);
+        if (existing) {
+          if (msg.points && msg.points.length > 0) {
+            existing.points.push(...msg.points);
+          }
+          existing.timestamp = Date.now();
+        } else if (msg.points && msg.points.length > 0) {
+          strokes.push({
+            id: msg.strokeId,
+            peerId: msg.peerId,
+            color: msg.color || '#3b82f6',
+            points: [...msg.points],
+            timestamp: Date.now()
+          });
+        }
+      });
+
+      window.overlayAPI.onClearStrokes((data) => {
+        if (data.scope === 'all') {
+          strokes = [];
+        } else if (data.peerId) {
+          strokes = strokes.filter(s => s.peerId !== data.peerId);
+        }
+      });
+
+      window.overlayAPI.onResizeDisplay((bounds) => {
+        resizeCanvas();
+      });
+    }
+  </script>
+</body>
+</html>
