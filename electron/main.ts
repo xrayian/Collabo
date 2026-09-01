@@ -3,6 +3,7 @@
  * Main process for Collabo Desktop (Host App with native transparent overlay).
  */
 import * as path from 'path';
+import type { BrowserWindow as BrowserWindowType } from 'electron';
 
 // If executed with plain Node.js runtime instead of Electron runtime, auto-spawn the Electron binary
 const electronModule = require('electron');
@@ -22,8 +23,8 @@ if (typeof electronModule === 'string') {
 function startElectronApp(electron: typeof import('electron')) {
   const { app, BrowserWindow, ipcMain, screen, desktopCapturer } = electron;
 
-  let controlWindow: BrowserWindow | null = null;
-  let overlayWindow: BrowserWindow | null = null;
+  let controlWindow: BrowserWindowType | null = null;
+  let overlayWindow: BrowserWindowType | null = null;
   let activeDisplayId: string | null = null;
   let pendingDeepLink: { meetingId: string; authCode: string } | null = null;
 
@@ -123,7 +124,7 @@ function startElectronApp(electron: typeof import('electron')) {
     }
 
     const hostUrl = process.env.COLLABO_HOST_URL || 'http://localhost:3000/desktop-host';
-    controlWindow.loadURL(hostUrl).catch((err) => {
+    controlWindow.loadURL(hostUrl).catch((err: any) => {
       console.warn('[Main] loadURL failed, falling back to local control.html:', err?.message);
       controlWindow?.loadFile(path.join(__dirname, 'control.html'));
     });
