@@ -256,16 +256,16 @@ function startElectronApp(electron: typeof import('electron')) {
     });
   }
 
-  // Display metrics change tracking
-  screen?.on('display-metrics-changed', () => {
-    if (overlayWindow && !overlayWindow.isDestroyed() && activeDisplayId) {
-      createOrUpdateOverlayWindow(activeDisplayId);
-    }
-  });
-
   app.whenReady().then(() => {
     setupIpc();
     createControlWindow();
+
+    // Display metrics change tracking (must be registered after app is ready)
+    screen.on('display-metrics-changed', () => {
+      if (overlayWindow && !overlayWindow.isDestroyed() && activeDisplayId) {
+        createOrUpdateOverlayWindow(activeDisplayId);
+      }
+    });
 
     const deepLinkArg = process.argv.find((arg) => arg.startsWith(`${PROTOCOL_NAME}://`));
     if (deepLinkArg) {
