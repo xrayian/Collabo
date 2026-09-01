@@ -158,7 +158,8 @@ For in-depth technical guides, consult the [`docs/`](./docs) directory:
 - [Collabo Desktop & OS Overlay](./docs/DESKTOP_HOST_APP.md)
 - [API & WebSocket Signaling Protocol](./docs/API_AND_SIGNALING.md)
 - [Drawing Engine & Ephemeral TTL](./docs/DRAWING_ENGINE.md)
-- [Getting Started & Deployment Guide](./docs/GETTING_STARTED.md)
+- [Getting Started Guide](./docs/GETTING_STARTED.md)
+- [Production Hosting & Deployment Plan](./docs/HOSTING_AND_DEPLOYMENT.md)
 
 ---
 

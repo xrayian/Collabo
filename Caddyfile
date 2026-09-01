@@ -1,0 +1,13 @@
+# ===================================================
+# Collabo — Caddy Reverse Proxy & Automatic SSL
+# ===================================================
+
+{$DOMAIN:localhost} {
+    reverse_proxy localhost:3000 {
+        # Enable WebSocket buffering and header forwarding
+        header_up Host {host}
+        header_up X-Real-IP {remote_host}
+        header_up X-Forwarded-For {remote_host}
+        header_up X-Forwarded-Proto {scheme}
+    }
+}
