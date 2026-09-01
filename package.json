@@ -1,0 +1,51 @@
+{
+  "name": "collabo",
+  "version": "1.0.0",
+  "description": "Invite-only screen-draw meeting platform with SFU star architecture",
+  "main": "server/ws-server.ts",
+  "scripts": {
+    "dev": "tsx server/ws-server.ts",
+    "build": "next build",
+    "build:electron": "esbuild electron/main.ts electron/preload.ts electron/preload-overlay.ts --bundle --platform=node --external:electron --outdir=dist/electron && node -e \"require('fs').copyFileSync('electron/overlay.html', 'dist/electron/overlay.html'); require('fs').copyFileSync('electron/control.html', 'dist/electron/control.html');\"",
+    "electron:start": "electron dist/electron/main.js",
+    "desktop": "npm run build:electron && electron dist/electron/main.js",
+    "start": "NODE_ENV=production tsx server/ws-server.ts",
+    "test": "tsx tests/run-all.ts",
+    "test:e2e": "tsx tests/e2e-room.test.ts",
+    "test:freeform": "tsx tests/draw-freeform.test.ts",
+    "test:ttl": "tsx tests/draw-ttl.test.ts",
+    "typecheck": "tsc --noEmit"
+  },
+  "keywords": [
+    "screen-draw",
+    "webrtc",
+    "mediasoup",
+    "sfu",
+    "collaboration"
+  ],
+  "license": "MIT",
+  "dependencies": {
+    "clsx": "^2.1.1",
+    "lucide-react": "^1.39.0",
+    "mediasoup": "^3.26.0",
+    "mediasoup-client": "^3.23.1",
+    "next": "^16.3.4",
+    "react": "^19.2.8",
+    "react-dom": "^19.2.8",
+    "tailwind-merge": "^3.6.0",
+    "ws": "^8.21.3"
+  },
+  "devDependencies": {
+    "@tailwindcss/postcss": "^4.3.3",
+    "@types/node": "^26.4.1",
+    "@types/react": "^19.2.18",
+    "@types/react-dom": "^19.2.5",
+    "@types/ws": "^8.18.1",
+    "autoprefixer": "^10.5.4",
+    "electron": "^44.1.1",
+    "postcss": "^8.5.26",
+    "tailwindcss": "^4.3.3",
+    "tsx": "^4.23.13",
+    "typescript": "^7.0.2"
+  }
+}
