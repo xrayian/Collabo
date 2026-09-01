@@ -1,0 +1,80 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <defs>
+    <!-- Background Gradient -->
+    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#090d16" />
+      <stop offset="100%" stop-color="#020617" />
+    </linearGradient>
+
+    <!-- Vibrant Brand Accent Gradient -->
+    <linearGradient id="brandGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#60a5fa" />
+      <stop offset="50%" stop-color="#3b82f6" />
+      <stop offset="100%" stop-color="#2563eb" />
+    </linearGradient>
+
+    <!-- Neon Drawing Glow Gradient -->
+    <linearGradient id="strokeGrad" x1="0%" y1="100%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#38bdf8" />
+      <stop offset="50%" stop-color="#818cf8" />
+      <stop offset="100%" stop-color="#c084fc" />
+    </linearGradient>
+
+    <!-- Screen Frame Gradient -->
+    <linearGradient id="frameGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#1e293b" />
+      <stop offset="100%" stop-color="#0f172a" />
+    </linearGradient>
+
+    <!-- Subtle Drop Shadow Filter -->
+    <filter id="shadow" x="-10%" y="-10%" width="120%" height="120%">
+      <feDropShadow dx="0" dy="16" stdDeviation="24" flood-color="#1d4ed8" flood-opacity="0.35" />
+    </filter>
+    <filter id="glow" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="8" result="blur" />
+      <feComposite in="SourceGraphic" in2="blur" operator="over" />
+    </filter>
+  </defs>
+
+  <!-- App Icon Base Squircle Background -->
+  <rect x="24" y="24" width="464" height="464" rx="108" fill="url(#bgGrad)" stroke="#1e293b" stroke-width="6" />
+
+  <!-- Outer Glow Arc -->
+  <rect x="32" y="32" width="448" height="448" rx="100" fill="none" stroke="url(#brandGrad)" stroke-width="2" stroke-opacity="0.3" />
+
+  <!-- Monitor / Screen Frame -->
+  <rect x="96" y="104" width="320" height="216" rx="20" fill="url(#frameGrad)" stroke="#334155" stroke-width="6" filter="url(#shadow)" />
+  
+  <!-- Monitor Inner Glass Display -->
+  <rect x="108" y="116" width="296" height="192" rx="12" fill="#020617" />
+
+  <!-- Monitor Stand Stem -->
+  <path d="M 232 320 L 224 380 L 288 380 L 280 320 Z" fill="#1e293b" stroke="#334155" stroke-width="4" />
+
+  <!-- Monitor Stand Base -->
+  <rect x="180" y="380" width="152" height="18" rx="9" fill="url(#frameGrad)" stroke="#334155" stroke-width="4" />
+
+  <!-- Screen Top Status Bar Dot Indicators -->
+  <circle cx="132" cy="136" r="5" fill="#ef4444" />
+  <circle cx="150" cy="136" r="5" fill="#f59e0b" />
+  <circle cx="168" cy="136" r="5" fill="#10b981" />
+
+  <!-- Dynamic Live Multi-User Annotations Flourish (Screen Draw Curve) -->
+  <path d="M 140 240 C 180 160, 240 280, 310 180 S 370 230, 380 200" 
+        fill="none" 
+        stroke="url(#strokeGrad)" 
+        stroke-width="16" 
+        stroke-linecap="round" 
+        stroke-linejoin="round"
+        filter="url(#glow)" />
+
+  <!-- Live Collaboration Pen / Pointer Indicator -->
+  <g transform="translate(365, 175) rotate(-35)">
+    <path d="M 0 0 L 16 38 L 26 26 L 38 16 Z" fill="#38bdf8" />
+    <circle cx="0" cy="0" r="4" fill="#ffffff" />
+  </g>
+
+  <!-- Secondary Annotation Pulse -->
+  <circle cx="210" cy="205" r="7" fill="#60a5fa" />
+  <circle cx="310" cy="180" r="6" fill="#c084fc" />
+</svg>

@@ -3,12 +3,16 @@
   "version": "1.0.0",
   "description": "Invite-only screen-draw meeting platform with SFU star architecture",
   "main": "dist/electron/main.js",
+  "author": "Rayian Mahi <rbsmahi@gmail.com>",
   "scripts": {
     "dev": "tsx server/ws-server.ts",
     "build": "next build",
-    "build:electron": "esbuild electron/main.ts electron/preload.ts electron/preload-overlay.ts --bundle --platform=node --external:electron --outdir=dist/electron && node -e \"require('fs').copyFileSync('electron/overlay.html', 'dist/electron/overlay.html'); require('fs').copyFileSync('electron/control.html', 'dist/electron/control.html');\"",
+    "icons": "electron electron/generate-icons.js",
+    "build:electron": "esbuild electron/main.ts electron/preload.ts electron/preload-overlay.ts --bundle --platform=node --external:electron --outdir=dist/electron && node -e \"const fs = require('fs'); fs.mkdirSync('dist/electron/assets', { recursive: true }); fs.copyFileSync('electron/overlay.html', 'dist/electron/overlay.html'); fs.copyFileSync('electron/control.html', 'dist/electron/control.html'); if(fs.existsSync('electron/assets/icon.png')) fs.copyFileSync('electron/assets/icon.png', 'dist/electron/assets/icon.png'); if(fs.existsSync('electron/assets/icon.ico')) fs.copyFileSync('electron/assets/icon.ico', 'dist/electron/assets/icon.ico');\"",
     "electron:start": "electron dist/electron/main.js",
     "desktop": "npm run build:electron && electron dist/electron/main.js",
+    "build:dist": "npm run build:electron && electron-builder",
+    "build:dist:dir": "npm run build:electron && electron-builder --dir",
     "start": "NODE_ENV=production tsx server/ws-server.ts",
     "test": "tsx tests/run-all.ts",
     "test:e2e": "tsx tests/e2e-room.test.ts",
@@ -16,12 +20,62 @@
     "test:ttl": "tsx tests/draw-ttl.test.ts",
     "typecheck": "tsc --noEmit"
   },
+  "build": {
+    "appId": "com.collabo.desktop",
+    "productName": "Collabo",
+    "copyright": "Copyright © 2026 Rayian Mahi",
+    "directories": {
+      "output": "release"
+    },
+    "files": [
+      "dist/electron/**/*",
+      "package.json"
+    ],
+    "protocols": {
+      "name": "Collabo Protocol",
+      "schemes": [
+        "collabo"
+      ]
+    },
+    "win": {
+      "target": [
+        "nsis",
+        "portable"
+      ],
+      "icon": "electron/assets/icon.ico"
+    },
+    "mac": {
+      "target": [
+        "dmg",
+        "zip"
+      ],
+      "icon": "electron/assets/icon.png",
+      "category": "public.app-category.productivity"
+    },
+    "linux": {
+      "target": [
+        "AppImage",
+        "deb"
+      ],
+      "icon": "electron/assets/icon.png",
+      "category": "Network"
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "shortcutName": "Collabo Desktop"
+    }
+  },
   "keywords": [
     "screen-draw",
     "webrtc",
     "mediasoup",
     "sfu",
-    "collaboration"
+    "collaboration",
+    "electron",
+    "desktop-overlay"
   ],
   "license": "MIT",
   "dependencies": {
@@ -43,6 +97,7 @@
     "@types/ws": "^8.18.1",
     "autoprefixer": "^10.5.4",
     "electron": "^44.1.1",
+    "electron-builder": "^26.15.3",
     "postcss": "^8.5.26",
     "tailwindcss": "^4.3.3",
     "tsx": "^4.23.13",

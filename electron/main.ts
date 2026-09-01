@@ -80,11 +80,19 @@ function startElectronApp(electron: typeof import('electron')) {
     }
   }
 
+  // App metadata & AppUserModelId for Windows taskbar & notifications
+  app.name = 'Collabo';
+  if (process.platform === 'win32') {
+    app.setAppUserModelId('com.collabo.desktop');
+  }
+
   // Handle macOS open-url
   app.on('open-url', (event, url) => {
     event.preventDefault();
     handleDeepLink(url);
   });
+
+  const iconPath = path.join(__dirname, 'assets', process.platform === 'win32' ? 'icon.ico' : 'icon.png');
 
   /**
    * Creates the Host Control Window.
@@ -96,6 +104,7 @@ function startElectronApp(electron: typeof import('electron')) {
       minWidth: 800,
       minHeight: 600,
       title: 'Collabo Desktop Host',
+      icon: iconPath,
       autoHideMenuBar: true,
       backgroundColor: '#09090b',
       webPreferences: {
