@@ -2,7 +2,7 @@
   "name": "collabo",
   "version": "1.0.0",
   "description": "Invite-only screen-draw meeting platform with SFU star architecture",
-  "main": "server/ws-server.ts",
+  "main": "dist/electron/main.js",
   "scripts": {
     "dev": "tsx server/ws-server.ts",
     "build": "next build",
