@@ -160,6 +160,7 @@ For in-depth technical guides, consult the [`docs/`](./docs) directory:
 - [Drawing Engine & Ephemeral TTL](./docs/DRAWING_ENGINE.md)
 - [Getting Started Guide](./docs/GETTING_STARTED.md)
 - [Production Hosting & Deployment Plan](./docs/HOSTING_AND_DEPLOYMENT.md)
+- [Google Cloud (GCP) Deployment Guide](./docs/GCP_DEPLOYMENT_GUIDE.md)
 
 ---
 
