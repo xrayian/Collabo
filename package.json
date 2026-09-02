@@ -42,7 +42,7 @@
         "nsis",
         "portable"
       ],
-      "icon": "electron/assets/icon.ico"
+      "icon": "electron/assets/icon.png"
     },
     "mac": {
       "target": [
