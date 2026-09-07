@@ -16,6 +16,11 @@ export interface ScreenSourceInfo {
 contextBridge.exposeInMainWorld('electronAPI', {
   isElectron: true,
 
+  // Get server URL injected or configured for this client
+  getServerUrl: async (): Promise<string> => {
+    return ipcRenderer.invoke('get-server-url');
+  },
+
   // Query physical screens
   getScreenSources: async (): Promise<ScreenSourceInfo[]> => {
     return ipcRenderer.invoke('get-screen-sources');
@@ -39,8 +44,8 @@ contextBridge.exposeInMainWorld('electronAPI', {
     ipcRenderer.send('relay-clear', scope);
   },
 
-  // Listen for deep-linked meeting invites (collabo://host/...)
-  onDeepLinkMeeting: (callback: (data: { meetingId: string; authCode: string }) => void) => {
+  // Listen for deep-linked meeting invites (collabo://host/... or collabo://join/...)
+  onDeepLinkMeeting: (callback: (data: { meetingId: string; authCode: string; mode?: 'host' | 'join' }) => void) => {
     const handler = (_event: any, data: any) => callback(data);
     ipcRenderer.on('deep-link-meeting', handler);
     return () => ipcRenderer.removeListener('deep-link-meeting', handler);

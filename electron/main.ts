@@ -5,6 +5,9 @@
 import * as path from 'path';
 import type { BrowserWindow as BrowserWindowType } from 'electron';
 
+declare const DEFAULT_SERVER_URL: string | undefined;
+declare const DEFAULT_HOST_URL: string | undefined;
+
 // If executed with plain Node.js runtime instead of Electron runtime, auto-spawn the Electron binary
 const electronModule = require('electron');
 if (typeof electronModule === 'string') {
@@ -26,7 +29,7 @@ function startElectronApp(electron: typeof import('electron')) {
   let controlWindow: BrowserWindowType | null = null;
   let overlayWindow: BrowserWindowType | null = null;
   let activeDisplayId: string | null = null;
-  let pendingDeepLink: { meetingId: string; authCode: string } | null = null;
+  let pendingDeepLink: { meetingId: string; authCode: string; mode?: 'host' | 'join' } | null = null;
 
   // Protocol registration for collabo://
   const PROTOCOL_NAME = 'collabo';
@@ -56,13 +59,25 @@ function startElectronApp(electron: typeof import('electron')) {
     }
   });
 
-  function parseCollaboUrl(rawUrl: string): { meetingId: string; authCode: string } | null {
+  function parseCollaboUrl(rawUrl: string): { meetingId: string; authCode: string; mode?: 'host' | 'join' } | null {
     try {
       const url = new URL(rawUrl);
-      const meetingId = url.pathname.replace(/^\/+/, '').split('/')[0] || url.host;
+      let mode: 'host' | 'join' = 'host';
+      let meetingId = '';
+
+      if (url.host === 'join') {
+        mode = 'join';
+        meetingId = url.pathname.replace(/^\/+/, '').split('/')[0];
+      } else if (url.host === 'host') {
+        mode = 'host';
+        meetingId = url.pathname.replace(/^\/+/, '').split('/')[0];
+      } else {
+        meetingId = url.host || url.pathname.replace(/^\/+/, '').split('/')[0];
+      }
+
       const authCode = url.searchParams.get('code') || url.searchParams.get('authCode') || '';
       if (meetingId) {
-        return { meetingId, authCode };
+        return { meetingId, authCode, mode };
       }
     } catch (err) {
       console.warn('[Main] Failed to parse deep link URL:', rawUrl, err);
@@ -104,7 +119,7 @@ function startElectronApp(electron: typeof import('electron')) {
       height: 720,
       minWidth: 800,
       minHeight: 600,
-      title: 'Collabo Desktop Host',
+      title: 'Collabo Desktop',
       icon: iconPath,
       autoHideMenuBar: true,
       backgroundColor: '#09090b',
@@ -123,7 +138,12 @@ function startElectronApp(electron: typeof import('electron')) {
       console.warn('[Main] setContentProtection on control window:', err);
     }
 
-    const hostUrl = process.env.COLLABO_HOST_URL || 'http://localhost:3000/desktop-host';
+    const fallbackHostUrl = typeof DEFAULT_HOST_URL !== 'undefined'
+      ? DEFAULT_HOST_URL
+      : 'http://localhost:3000/desktop-host';
+    const hostUrl = process.env.COLLABO_HOST_URL || fallbackHostUrl;
+
+    console.log('[Main] Loading Host UI URL:', hostUrl);
     controlWindow.loadURL(hostUrl).catch((err: any) => {
       console.warn('[Main] loadURL failed, falling back to local control.html:', err?.message);
       controlWindow?.loadFile(path.join(__dirname, 'control.html'));
@@ -214,6 +234,13 @@ function startElectronApp(electron: typeof import('electron')) {
    * IPC Handlers
    */
   function setupIpc() {
+    ipcMain.handle('get-server-url', () => {
+      const fallbackServerUrl = typeof DEFAULT_SERVER_URL !== 'undefined'
+        ? DEFAULT_SERVER_URL
+        : 'http://localhost:3000';
+      return process.env.COLLABO_SERVER_URL || fallbackServerUrl;
+    });
+
     ipcMain.handle('get-screen-sources', async () => {
       const sources = await desktopCapturer.getSources({
         types: ['screen'],

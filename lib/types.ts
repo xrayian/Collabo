@@ -113,12 +113,13 @@ export interface ElectronScreenSource {
 
 export interface ElectronAPI {
   isElectron: boolean;
+  getServerUrl?: () => Promise<string>;
   getScreenSources: () => Promise<ElectronScreenSource[]>;
   startOverlay: (displayId?: string) => Promise<{ success: boolean; bounds: any }>;
   stopOverlay: () => Promise<{ success: boolean }>;
   relayStrokeToOverlay: (stroke: any) => void;
   relayClearToOverlay: (scope: any) => void;
-  onDeepLinkMeeting: (callback: (data: { meetingId: string; authCode: string }) => void) => () => void;
+  onDeepLinkMeeting: (callback: (data: { meetingId: string; authCode: string; mode?: 'host' | 'join' }) => void) => () => void;
 }
 
 declare global {

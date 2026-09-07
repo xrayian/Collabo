@@ -8,7 +8,7 @@
     "dev": "tsx server/ws-server.ts",
     "build": "next build",
     "icons": "electron electron/generate-icons.js",
-    "build:electron": "esbuild electron/main.ts electron/preload.ts electron/preload-overlay.ts --bundle --platform=node --external:electron --outdir=dist/electron && node -e \"const fs = require('fs'); fs.mkdirSync('dist/electron/assets', { recursive: true }); fs.copyFileSync('electron/overlay.html', 'dist/electron/overlay.html'); fs.copyFileSync('electron/control.html', 'dist/electron/control.html'); if(fs.existsSync('electron/assets/icon.png')) fs.copyFileSync('electron/assets/icon.png', 'dist/electron/assets/icon.png'); if(fs.existsSync('electron/assets/icon.ico')) fs.copyFileSync('electron/assets/icon.ico', 'dist/electron/assets/icon.ico');\"",
+    "build:electron": "node electron/build-electron.js",
     "electron:start": "electron dist/electron/main.js",
     "desktop": "npm run build:electron && electron dist/electron/main.js",
     "build:dist": "npm run build:electron && electron-builder",

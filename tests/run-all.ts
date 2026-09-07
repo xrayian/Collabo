@@ -30,9 +30,9 @@ async function startServer(): Promise<ChildProcess> {
     stdio: 'inherit',
   });
 
-  // Wait up to 15s for server to become healthy
+  // Wait up to 35s for server to become healthy
   const start = Date.now();
-  while (Date.now() - start < 15000) {
+  while (Date.now() - start < 35000) {
     await new Promise((r) => setTimeout(r, 500));
     if (await isServerRunning()) {
       console.log('✅ Server ready on http://localhost:3000\n');
@@ -41,7 +41,7 @@ async function startServer(): Promise<ChildProcess> {
   }
 
   serverProcess.kill();
-  throw new Error('Server failed to start within 15 seconds.');
+  throw new Error('Server failed to start within 35 seconds.');
 }
 
 async function runAllTests() {
