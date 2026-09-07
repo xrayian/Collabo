@@ -22,7 +22,7 @@ fi
 echo "=== [2/6] Updating packages and installing prerequisites ==="
 export DEBIAN_FRONTEND=noninteractive
 apt-get update
-apt-get install -y ca-certificates curl gnupg lsb-release git
+apt-get install -y ca-certificates curl gnupg lsb-release git dnsutils
 
 echo "=== [3/6] Installing Docker and Docker Compose ==="
 mkdir -m 0755 -p /etc/apt/keyrings
@@ -41,7 +41,7 @@ fi
 
 cd /opt/collabo
 
-echo "=== [5/6] Detecting Public IP and Configuring Environment ==="
+echo "=== [5/6] Detecting Public IP and Configuring Domain ==="
 # Attempt to fetch public IP from Azure Instance Metadata Service (IMDS)
 PUBLIC_IP=$(curl -s -H Metadata:true --noproxy "*" "http://169.254.169.254/metadata/instance/network/interface/0/ipv4/ipAddress/0/publicIpAddress?api-version=2021-02-01&format=text" 2>/dev/null || true)
 
@@ -49,8 +49,22 @@ if [ -z "$PUBLIC_IP" ] || [[ "$PUBLIC_IP" =~ "error" ]]; then
   PUBLIC_IP=$(curl -s ifconfig.me)
 fi
 
-# Fallback domain configuration
-APP_DOMAIN=${DOMAIN:-${PUBLIC_IP}.nip.io}
+# Detect domain: User override -> Azure reverse DNS FQDN -> nip.io fallback
+if [ -n "$DOMAIN" ]; then
+  APP_DOMAIN="$DOMAIN"
+else
+  # Check if an Azure DNS name label is configured on the Public IP
+  DETECTED_FQDN=$(getent hosts "$PUBLIC_IP" 2>/dev/null | awk '{print $2}' || true)
+  if [[ -z "$DETECTED_FQDN" ]]; then
+    DETECTED_FQDN=$(nslookup "$PUBLIC_IP" 2>/dev/null | awk -F'= ' '/name =/ {print $2}' | sed 's/\.$//' || true)
+  fi
+
+  if [[ "$DETECTED_FQDN" =~ \.cloudapp\.azure\.com$ ]]; then
+    APP_DOMAIN="$DETECTED_FQDN"
+  else
+    APP_DOMAIN="${PUBLIC_IP}.nip.io"
+  fi
+fi
 
 cat <<EOF > /opt/collabo/.env
 PORT=3000
@@ -62,8 +76,8 @@ MEDIASOUP_MAX_PORT=49999
 DOMAIN=${APP_DOMAIN}
 EOF
 
-echo "Public IP detected: ${PUBLIC_IP}"
-echo "Collabo domain configured: ${APP_DOMAIN}"
+echo "Public IP: ${PUBLIC_IP}"
+echo "Configured Domain: ${APP_DOMAIN}"
 
 echo "=== [6/6] Launching Collabo Container Stack ==="
 docker compose down || true
@@ -71,5 +85,6 @@ docker compose up -d --build
 
 echo "=================================================================="
 echo "🎉 Collabo is now running live on Azure!"
-echo "Access URL: http://${PUBLIC_IP}:3000 or https://${APP_DOMAIN}"
+echo "Access URL: https://${APP_DOMAIN}"
+echo "(Note: Port 3000 is internal and reverse-proxied via HTTPS on port 443)"
 echo "=================================================================="

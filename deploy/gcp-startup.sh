@@ -49,5 +49,6 @@ docker compose up -d --build
 
 echo "=================================================================="
 echo "🎉 Collabo is now running live on Google Cloud!"
-echo "Access URL: http://${PUBLIC_IP}:3000 or https://${DOMAIN:-${PUBLIC_IP}.nip.io}"
+echo "Access URL: https://${DOMAIN:-${PUBLIC_IP}.nip.io}"
+echo "(Note: Port 3000 is internal and reverse-proxied via HTTPS on port 443)"
 echo "=================================================================="

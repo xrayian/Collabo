@@ -143,8 +143,9 @@ cd /opt/collabo
 # Query Azure Instance Metadata Service for public IP
 PUBLIC_IP=$(curl -s -H Metadata:true --noproxy "*" "http://169.254.169.254/metadata/instance/network/interface/0/ipv4/ipAddress/0/publicIpAddress?api-version=2021-02-01&format=text" || curl -s ifconfig.me)
 
-# If you configured an Azure DNS label, specify it below; otherwise use nip.io:
-DOMAIN="${PUBLIC_IP}.nip.io"
+# If you configured an Azure DNS label, set your full FQDN below (e.g. collabo-backend.eastasia.cloudapp.azure.com)
+# Otherwise, fall back to nip.io:
+DOMAIN="${DOMAIN:-${PUBLIC_IP}.nip.io}"
 
 sudo tee /opt/collabo/.env <<EOF
 PORT=3000
@@ -157,9 +158,22 @@ DOMAIN=${DOMAIN}
 EOF
 ```
 
+> [!NOTE]
+> **Domain Formatting Rule for Caddy:** Always specify a single clean domain (`DOMAIN=my-app.eastasia.cloudapp.azure.com`). If specifying multiple domains, separate them with a space (`DOMAIN="site1.com site2.com"`). Never join with commas without spaces (`site1,site2`), as Caddy will reject it as an invalid hostname.
+>
+> **Port 3000 vs 443:** Port 3000 is internal and intentionally blocked in the Azure NSG firewall. Caddy automatically listens on standard HTTPS (port 443) and proxies requests to `localhost:3000`. Access your site via `https://<YOUR_DOMAIN>`.
+
 ### 4. Build and Start
 ```bash
 sudo docker compose up -d --build
+```
+
+### 5. Changing Domain After Deployment
+If you update `DOMAIN` in `/opt/collabo/.env` later, recreate the Caddy container so it obtains a new Let's Encrypt certificate:
+```bash
+cd /opt/collabo
+sudo docker compose up -d caddy
+sudo docker compose logs --tail=30 -f caddy
 ```
 
 ---
