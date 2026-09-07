@@ -37,3 +37,8 @@ next-env.d.ts
 .agy/
 /dist/
 /release/
+
+# ssh keys and credentials
+.ssh/
+*.key
+id_*
