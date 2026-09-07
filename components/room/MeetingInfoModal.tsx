@@ -121,12 +121,24 @@ export const MeetingInfoModal: React.FC<MeetingInfoModalProps> = ({
           </Button>
 
           {/* Open in Collabo Desktop Option */}
-          <a
-            href={`collabo://host/${meetingId}?code=${authCode}`}
-            className="block w-full text-center py-2 px-3 rounded-lg border border-zinc-200 bg-zinc-50 hover:bg-zinc-100 text-xs font-medium text-zinc-700 transition-colors"
-          >
-            🖥️ Open in Collabo Desktop (Live OS Overlay)
-          </a>
+          <div className="space-y-1.5">
+            <a
+              href={`collabo://host/${meetingId}?code=${authCode}`}
+              className="block w-full text-center py-2 px-3 rounded-lg border border-zinc-200 bg-zinc-50 hover:bg-zinc-100 text-xs font-semibold text-zinc-800 transition-colors"
+            >
+              🖥️ Open in Collabo Desktop (Live OS Overlay)
+            </a>
+            <div className="text-center">
+              <a
+                href="/api/download"
+                target="_blank"
+                rel="noreferrer"
+                className="text-[11px] text-zinc-500 hover:text-blue-600 underline underline-offset-2 transition-colors"
+              >
+                Don&apos;t have the desktop app? Download here
+              </a>
+            </div>
+          </div>
         </div>
       </div>
     </Modal>
